@@ -1,4 +1,5 @@
 import { ModeToggle } from "./components/mode-toggle"
+import { saveAs } from "file-saver";
 
 import {
   Menubar
@@ -17,7 +18,8 @@ import { Input } from "@/components/ui/input"
 
 
 import { QRCode } from 'react-qrcode-logo';
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Button } from "./components/ui/button";
 
 
 
@@ -26,10 +28,24 @@ function App() {
   const [input, setInput] = useState<string>("")
   const [size, setSize] = useState<number | undefined>(undefined)
 
+  const qrRef = useRef<HTMLDivElement>(null);
+
   const handleSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Use parseInt para converter a string de entrada para número
     const newSize = parseInt(e.target.value, 10);
     setSize(newSize || undefined); // Se a conversão falhar (NaN), defina como undefined
+  };
+
+  const exportQRCode = () => {
+    if (qrRef.current) {
+      const canvas = qrRef.current.querySelector("canvas");
+      if (canvas) {
+        // Converte o canvas para um Data URL
+        const dataURL = canvas.toDataURL("image/png");
+        // Converte o Data URL para um blob e salva o arquivo
+        saveAs(dataURL, "qrcode.png");
+      }
+    }
   };
 
 
@@ -60,11 +76,18 @@ function App() {
           placeholder="Digite o tamanho em px"
           />
         </CardContent>
-        <CardFooter>
+        <CardContent ref={qrRef}>
           <QRCode 
           value={input}
           size= {size !== undefined ? size : 150}
           />
+        </CardContent>
+        <CardFooter>
+        <Button
+        onClick={exportQRCode}
+        >
+          Baixar imagem
+        </Button>
         </CardFooter>
       </Card>
 
